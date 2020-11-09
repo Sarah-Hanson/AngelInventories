@@ -1,0 +1,37 @@
+package sarah.AngelInventories.commands;
+
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import sarah.AngelInventories.invManagement.PlayerData;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class CommandRecoverInventory  implements CommandExecutor {
+    HashMap<Player,PlayerData> playerData;
+
+    public CommandRecoverInventory(HashMap<Player,PlayerData> playerData){
+        this.playerData = playerData;
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        if (sender instanceof Player && args.length == 0) {
+            Player player = (Player) sender;
+            PlayerData senderData = null;
+            boolean playerExists = false;
+
+            if(playerData.containsKey(player)) {
+                PlayerData data = playerData.get(player);
+                if(!data.permCheckPlayer()) {
+                    player.sendMessage("You do not have excess inventories to recover");
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+}
