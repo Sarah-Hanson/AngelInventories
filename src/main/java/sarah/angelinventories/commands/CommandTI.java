@@ -21,8 +21,7 @@ public class CommandTI implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            PlayerData senderData = null;
-            boolean playerExists = false;
+            PlayerData senderData;
 
             if (playerData.containsKey(player)) {
                 senderData = playerData.get(player);
@@ -37,7 +36,8 @@ public class CommandTI implements CommandExecutor {
             if (senderData != null) {
                 // Just /TI command
                 if (args.length == 0) {
-                    senderData.ToggleInv();
+                    sender.sendMessage("Inventory set to: " + senderData.ToggleInv()+1);
+                    return true;
                 } else if (args.length == 1) {
                     int invNum;
                     try {
@@ -46,11 +46,11 @@ public class CommandTI implements CommandExecutor {
                         return false;
                     }
                     senderData.SetInv(invNum);
+                    sender.sendMessage("Inventory set to: " + invNum+1);
+                    return true;
                 }
             }
         }
-
-        // If the player (or console) uses our command correct, we can return true
-        return true;
+        return false;
     }
 }

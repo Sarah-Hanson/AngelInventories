@@ -23,6 +23,8 @@ public class CommandSetInventory implements CommandExecutor {
             Inventory inv = staticInventories.get(args[1]);
 
             target.getInventory().setContents(inv.getContents());
+
+            sender.sendMessage(target.getDisplayName() + " has had their inventory set to " + args[1]);
         }
         return true;
     }

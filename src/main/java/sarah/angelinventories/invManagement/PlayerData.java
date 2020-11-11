@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class PlayerData {
     Player player;
     ArrayList<Inventory> inventories;
-    int cur_inv = 1;
+    int cur_inv = 0;
     int max_inv;
 
     public PlayerData(ArrayList<Inventory> inventories, Player player) {
@@ -30,25 +30,26 @@ public class PlayerData {
     }
 
     //Increments the player's inventory by one, or resets it if over max
-    public void ToggleInv() {
+    public int ToggleInv() {
         SaveInv();
         if (cur_inv++ > max_inv) {
-            cur_inv = 1;
+            cur_inv = 0;
         }
         player.getInventory().setContents(inventories.get(cur_inv).getContents());
+        return cur_inv;
     }
 
     //Used to set players to a specific one of their inventories
     public void SetInv(int inv_num) {
         SaveInv();
         //Adjust the index to start at 0 instead of 1
-        player.getInventory().setContents(inventories.get(inv_num - 1).getContents());
+        player.getInventory().setContents(inventories.get(inv_num).getContents());
     }
 
     //Dumps the last x inventories from the player onto the ground and removes them from the player
     public void DumpInvs(int dumpCount) {
         for (int i = 0; i < dumpCount; i++) {
-            dump(inventories.size() - 1); //Dump Last inventory on ground and delete
+            dump(inventories.size()-1); //Dump Last inventory on ground and delete
         }
     }
 
@@ -62,7 +63,7 @@ public class PlayerData {
 
     // Counts up on perms until it gets to one the player doesn't have, then sets max to the last number
     public int GetMaxInv() {
-        for (int i = 1; i < 6; i++) {
+        for (int i = 0; i < 5; i++) {
             if (!player.hasPermission("AngelInventories.Inventories." + i)) {
                 return i - 1;
             }

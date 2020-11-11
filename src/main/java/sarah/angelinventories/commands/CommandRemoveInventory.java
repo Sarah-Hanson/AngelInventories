@@ -20,8 +20,9 @@ public class CommandRemoveInventory implements CommandExecutor {
         if (args.length == 1) {
             if (staticInventories.containsKey(args[0])) {
                 staticInventories.remove(args[0]);
+                sender.sendMessage("The \"" + args[0] + "\" inventory has been deleted!");
             } else {
-                sender.sendMessage("That isn't a valid inventory");
+                sender.sendMessage("That isn't a valid inventory!");
             }
         }
         return false;

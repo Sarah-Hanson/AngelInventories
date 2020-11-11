@@ -22,6 +22,7 @@ public class CommandSaveInventory implements CommandExecutor {
 
             staticInventories.put(args[0], player.getInventory());
 
+            player.sendMessage("Inventory saved as: \"" + args[0] + "\"!");
             return true;
         }
         return false;

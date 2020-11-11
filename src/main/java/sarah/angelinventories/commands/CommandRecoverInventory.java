@@ -25,7 +25,10 @@ public class CommandRecoverInventory implements CommandExecutor {
             if (playerData.containsKey(player)) {
                 PlayerData data = playerData.get(player);
                 if (!data.permCheckPlayer()) {
-                    player.sendMessage("You do not have excess inventories to recover");
+                    player.sendMessage("You do not have excess any inventories to recover!");
+                }
+                else {
+                    player.sendMessage("Inventories dumped!");
                 }
                 return true;
             }
