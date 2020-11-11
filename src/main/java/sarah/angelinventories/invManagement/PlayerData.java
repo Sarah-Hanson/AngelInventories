@@ -26,7 +26,7 @@ public class PlayerData {
     }
 
     public void SaveInv() {
-        inventories.set(cur_inv, player.getInventory());
+        inventories.get(cur_inv).setContents(player.getInventory().getContents());
     }
 
     //Increments the player's inventory by one, or resets it if over max
