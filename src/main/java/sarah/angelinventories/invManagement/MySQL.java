@@ -30,7 +30,7 @@ public class MySQL {
                 connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, username, password);
             }
         } catch (Exception e) {
-            //TODO: Exception handling
+            Bukkit.getLogger().warning("Error opening the db: " + e.getMessage());
         }
     }
 
@@ -61,7 +61,7 @@ public class MySQL {
                 }
             }
         } catch (Exception e) {
-            //TODO: Log Errors
+            Bukkit.getLogger().warning("Error pulling player inventory data: " + e.getMessage());
         } finally {
             try {
                 connection.close();
@@ -96,7 +96,7 @@ public class MySQL {
                 invs.put(invName, InventorySerializer.fromBase64(invString));
             }
         } catch (Exception e) {
-            //TODO: Log Errors
+            Bukkit.getLogger().warning("Error pulling static inventory data: " + e.getMessage());
         } finally {
             try {
                 connection.close();
@@ -129,7 +129,7 @@ public class MySQL {
 
                     preparedStmt.execute();
                 } catch (Exception e) {
-                    //TODO: Exception Handling
+                    Bukkit.getLogger().warning("Error pushing player inventory data: " + e.getMessage());
                 }
             }
             try {
@@ -154,6 +154,7 @@ public class MySQL {
 
                 preparedStmt.execute();
             } catch (Exception e) {
+                Bukkit.getLogger().warning("Error pushing static inventory data: " + e.getMessage());
             }
         });
 

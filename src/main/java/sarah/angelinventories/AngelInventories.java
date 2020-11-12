@@ -20,12 +20,18 @@ public final class AngelInventories extends JavaPlugin {
         playerData = sql.getPlayerInventories();
         staticInventories = sql.getStaticInventories();
 
-        // Register Commands
-        getCommand("ti").setExecutor(new CommandTI(playerData));
-        getCommand("saveInventory").setExecutor(new CommandSaveInventory(staticInventories));
-        getCommand("setInventory").setExecutor(new CommandSetInventory(staticInventories));
-        getCommand("recoverInventory").setExecutor(new CommandRecoverInventory(playerData));
-        getCommand("removeInventory").setExecutor((new CommandRemoveInventory(staticInventories)));
+        if(playerData == null) {
+            playerData = new HashMap<>();
+        }
+        if(staticInventories == null) {
+            staticInventories = new HashMap<>();
+        }
+            // Register Commands
+            getCommand("ti").setExecutor(new CommandTI(playerData));
+            getCommand("saveInventory").setExecutor(new CommandSaveInventory(staticInventories));
+            getCommand("setInventory").setExecutor(new CommandSetInventory(staticInventories));
+            getCommand("recoverInventory").setExecutor(new CommandRecoverInventory(playerData));
+            getCommand("removeInventory").setExecutor((new CommandRemoveInventory(staticInventories)));
 
         // Listener hooks
         getServer().getPluginManager().registerEvents(new SaveListener(this), this);
