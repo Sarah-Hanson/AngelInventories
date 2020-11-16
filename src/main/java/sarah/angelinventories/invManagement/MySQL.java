@@ -3,6 +3,7 @@ package sarah.angelinventories.invManagement;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import sarah.angelinventories.AngelInventories;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,9 +14,18 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class MySQL {
+    private AngelInventories plugin;
     private Connection connection;
-    private String host = "localhost", database = "angel_inventory", username = "root", password = "P@ssword";
+    private String host, database, username, password;
     private int port = 3306;
+
+    public MySQL(AngelInventories plugin) {
+        this.plugin = plugin;
+        host = plugin.getConfig().getString("mysql.host");
+        database = plugin.getConfig().getString("mysql.database");
+        username = plugin.getConfig().getString("mysql.username");
+        password = plugin.getConfig().getString("mysql.password");
+    }
 
     private void openConnection() {
         try {

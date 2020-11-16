@@ -1,5 +1,6 @@
 package sarah.angelinventories;
 
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -12,10 +13,20 @@ import java.util.HashMap;
 public final class AngelInventories extends JavaPlugin {
     HashMap<Player, PlayerData> playerData;
     HashMap<String, Inventory> staticInventories;
-    MySQL sql = new MySQL();
+    MySQL sql = new MySQL(this);
+    public FileConfiguration config = getConfig();
 
     @Override
     public void onEnable() {
+        // Config Stuff
+        config.addDefault("debugging", false);
+        config.addDefault("mysql.host", "127.0.0.1");
+        config.addDefault("mysql.database", "AngelInventories");
+        config.addDefault("mysql.username", "username");
+        config.addDefault("mysql.password", "password");
+        config.options().copyDefaults(true);
+        saveConfig();
+
         // Pull data from db to memory
         playerData = sql.getPlayerInventories();
         staticInventories = sql.getStaticInventories();
