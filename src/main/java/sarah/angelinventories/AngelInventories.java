@@ -11,9 +11,9 @@ import sarah.angelinventories.invManagement.PlayerData;
 import java.util.HashMap;
 
 public final class AngelInventories extends JavaPlugin {
-    HashMap<Player, PlayerData> playerData;
-    HashMap<String, Inventory> staticInventories;
-    MySQL sql = new MySQL(this);
+    public HashMap<Player, PlayerData> playerData;
+    public HashMap<String, Inventory> staticInventories;
+    public MySQL mysql;
     public FileConfiguration config = getConfig();
 
     @Override
@@ -24,22 +24,27 @@ public final class AngelInventories extends JavaPlugin {
         config.addDefault("mysql.database", "AngelInventories");
         config.addDefault("mysql.username", "username");
         config.addDefault("mysql.password", "password");
+        config.addDefault("mysql.port", "password");
         config.options().copyDefaults(true);
         saveConfig();
 
         // Pull data from db to memory
-        playerData = sql.getPlayerInventories();
-        staticInventories = sql.getStaticInventories();
+        playerData = mysql.getPlayerInventories();
+        staticInventories = mysql.getCustomInventories();
 
         // Register Commands
         getCommand("ti").setExecutor(new CommandTI(playerData));
-        getCommand("saveInventory").setExecutor(new CommandSaveInventory(staticInventories));
-        getCommand("setInventory").setExecutor(new CommandSetInventory(staticInventories));
         getCommand("recoverInventory").setExecutor(new CommandRecoverInventory(playerData));
-        getCommand("removeInventory").setExecutor((new CommandRemoveInventory(staticInventories)));
+        getCommand("saveCustomInventory").setExecutor(new CommandSaveInventory(staticInventories));
+        getCommand("equipCustomInventory").setExecutor(new CommandSetInventory(staticInventories));
+        getCommand("removeCustomInventory").setExecutor((new CommandRemoveInventory(staticInventories)));
 
         // Listener hooks
         getServer().getPluginManager().registerEvents(new SaveListener(this), this);
+
+        // Database
+        mysql = new MySQL(this);
+        mysql.load();
     }
 
     @Override
@@ -65,8 +70,8 @@ public final class AngelInventories extends JavaPlugin {
         // can be replaced with another db table to store that, only caveat of this method is that it sets all players
         // back to their default inventory on plugin disable which some people could find mildly irritating
 
-        sql.setInventories(playerData);
-        sql.setStaticInventories(staticInventories);
+        mysql.setPlayerInventories(playerData);
+        mysql.setCustomInventories(staticInventories);
     }
 
 }

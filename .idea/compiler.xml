@@ -2,15 +2,18 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
-      <profile name="Maven default annotation processors profile" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+      <profile name="Gradle Imported" enabled="true">
         <outputRelativeToContentRoot value="true" />
-        <module name="AngelInventories" />
+        <option name="bungeeAnnotationResultPath" value="D:\projects\AngelInventories\build\spigradle\bungee_main" />
+        <option name="nukkitAnnotationResultPath" value="D:\projects\AngelInventories\build\spigradle\nukkit_main" />
+        <option name="pluginAnnotationResultPath" value="D:\projects\AngelInventories\build\spigradle\plugin_main" />
+        <option name="spigotAnnotationResultPath" value="D:\projects\AngelInventories\build\spigradle\spigot_main" />
+        <processorPath useClasspath="false">
+          <entry name="$USER_HOME$/.gradle/caches/modules-2/files-2.1/kr.entree/spigradle-annotations/2.1.1/140e14d5fb373843420f0719f6f83cacc07d8cd1/spigradle-annotations-2.1.1.jar" />
+        </processorPath>
+        <module name="AngelInventories.main" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="AngelInventories" target="1.8" />
-    </bytecodeTargetLevel>
+    <bytecodeTargetLevel target="1.8" />
   </component>
 </project>

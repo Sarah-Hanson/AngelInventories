@@ -36,17 +36,19 @@ public class CommandTI implements CommandExecutor {
             if (senderData != null) {
                 // Just /TI command
                 if (args.length == 0) {
-                    sender.sendMessage("Inventory set to: " + senderData.ToggleInv()+1);
+                    senderData.ToggleInv();
+                    sender.sendMessage("Inventory set to: " + (senderData.currentPlayerInvIndex + 1));
                     return true;
                 } else if (args.length == 1) {
                     int invNum;
                     try {
-                        invNum = Integer.parseInt(args[0]);
+                        invNum = Integer.parseInt(args[0]) - 1;
                     } catch (NumberFormatException e) {
+                        sender.sendMessage("Argument must be an inventory index.");
                         return false;
                     }
                     senderData.SetInv(invNum);
-                    sender.sendMessage("Inventory set to: " + invNum+1);
+                    sender.sendMessage("Inventory set to: " + (invNum + 1));
                     return true;
                 }
             }

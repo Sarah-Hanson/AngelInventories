@@ -1,42 +1,54 @@
 package sarah.angelinventories.invManagement;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import sarah.angelinventories.AngelInventories;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class PlayerData {
+    AngelInventories plugin;
     Player player;
+    UUID uuid;
     ArrayList<Inventory> inventories;
-    int cur_inv = 0;
-    int max_inv;
+    public Integer currentPlayerInvIndex;
+    String currentCustomInvName;
 
     public PlayerData(ArrayList<Inventory> inventories, Player player) {
-        this.inventories = inventories;
         this.player = player;
-        max_inv = GetMaxInv();
-        if (inventories.size() < max_inv) {
-            for (int i = inventories.size(); i < max_inv; i++) {
-                inventories.add(Bukkit.createInventory(null, InventoryType.PLAYER));
-            }
-        }
+        uuid = player.getUniqueId();
+        plugin.mysql.loadPlayer(this);
     }
 
     public void SaveInv() {
-        inventories.get(cur_inv).setContents(player.getInventory().getContents());
+        inventories.get(currentPlayerInvIndex).setContents(player.getInventory().getContents());
     }
 
     //Increments the player's inventory by one, or resets it if over max
-    public int ToggleInv() {
+    public void ToggleInv() {
+        ToggleInv(false);
+    }
+
+    public void ToggleInv(Boolean backward) {
         SaveInv();
-        if (cur_inv++ > max_inv) {
-            cur_inv = 0;
+        if (GetMaxInv() == 1) {
+            player.sendMessage("You don't have permission to toggle inventories.");
+        } else {
+            if (backward) {
+                currentPlayerInvIndex--;
+                if (currentPlayerInvIndex < 0) {
+                    currentPlayerInvIndex = GetMaxInv();
+                }
+            } else {
+                currentPlayerInvIndex++;
+                if (currentPlayerInvIndex > GetMaxInv()) {
+                    currentPlayerInvIndex = 0;
+                }
+            }
+            player.getInventory().setContents(inventories.get(currentPlayerInvIndex).getContents());
         }
-        player.getInventory().setContents(inventories.get(cur_inv).getContents());
-        return cur_inv;
     }
 
     //Used to set players to a specific one of their inventories
@@ -49,7 +61,7 @@ public class PlayerData {
     //Dumps the last x inventories from the player onto the ground and removes them from the player
     public void DumpInvs(int dumpCount) {
         for (int i = 0; i < dumpCount; i++) {
-            dump(inventories.size()-1); //Dump Last inventory on ground and delete
+            dump(inventories.size() - 1); //Dump Last inventory on ground and delete
         }
     }
 
@@ -61,14 +73,13 @@ public class PlayerData {
         inventories.remove(invToDump);
     }
 
-    // Counts up on perms until it gets to one the player doesn't have, then sets max to the last number
+    // Counts down permissions until it finds one the player has, meaning they don't have to have every permission from 2 to whatever amount we want them to have.
     public int GetMaxInv() {
-        for (int i = 0; i < 5; i++) {
-            if (!player.hasPermission("AngelInventories.Inventories." + i)) {
-                return i - 1;
-            }
+        int maxInventories = 5;
+        while (maxInventories > 1 && !player.hasPermission("AngelInventories.Inventories." + maxInventories)) {
+            maxInventories--;
         }
-        return 0; // Shouldn't actually get to this line, but the language needs it anyway
+        return maxInventories;
     }
 
     public int GetInvCount() {
@@ -77,7 +88,7 @@ public class PlayerData {
 
     //Re-checks player's permissions and then handles the inventory recovery
     public boolean permCheckPlayer() {
-        max_inv = GetMaxInv();
+        Integer max_inv = GetMaxInv();
         if (GetInvCount() > GetMaxInv()) {
             int overage = GetInvCount() - GetMaxInv();
             DumpInvs(overage);
