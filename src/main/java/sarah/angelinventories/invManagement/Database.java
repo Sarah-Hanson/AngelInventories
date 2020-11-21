@@ -2,12 +2,10 @@ package sarah.angelinventories.invManagement;
 
 import sarah.angelinventories.AngelInventories;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.UUID;
 import java.util.logging.Level;
 
 public abstract class Database {
@@ -40,34 +38,6 @@ public abstract class Database {
     }
 
     protected abstract Connection getSQLConnection();
-
-    public void loadPlayer(PlayerData playerData) {
-        UUID uuid = playerData.player.getUniqueId();
-        PreparedStatement ps;
-        try {
-            String query =
-                    "SELECT *" +
-                            "FROM player_data" +
-                            "WHERE uuid = ?" +
-                            "INNER JOIN player_inventories" +
-                            "ON player_data.uuid = player_inventories.uuid" +
-                            "ORDER BY player_inventories.index ASC;";
-            ps = connection.prepareStatement(query);
-            ps.setObject(1, uuid);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                playerData.inventories.add(InventorySerializer.fromBase64(rs.getString("inventory")));
-                if (playerData.currentPlayerInvIndex == null) {
-                    playerData.currentPlayerInvIndex = rs.getInt("current_player_inv");
-                }
-                if (playerData.currentCustomInvName == null) {
-                    playerData.currentCustomInvName = rs.getString("current_custom_inv");
-                }
-            }
-        } catch (SQLException | IOException ex) {
-            plugin.getLogger().log(Level.SEVERE, Errors.sqlConnectionClose(), ex);
-        }
-    }
 
     public void close(PreparedStatement ps, ResultSet rs) {
         try {

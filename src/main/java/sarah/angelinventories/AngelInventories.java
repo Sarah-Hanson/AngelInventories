@@ -1,23 +1,23 @@
 package sarah.angelinventories;
 
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.java.JavaPlugin;
 import sarah.angelinventories.commands.*;
 import sarah.angelinventories.invManagement.MySQL;
-import sarah.angelinventories.invManagement.PlayerData;
 
 import java.util.HashMap;
 
 public final class AngelInventories extends JavaPlugin {
-    public HashMap<Player, PlayerData> playerData;
+    public PlayerRoster playerRoster;
     public HashMap<String, Inventory> staticInventories;
     public MySQL mysql;
     public FileConfiguration config = getConfig();
 
     @Override
     public void onEnable() {
+        playerRoster = new PlayerRoster();
+
         // Config Stuff
         config.addDefault("debugging", false);
         config.addDefault("mysql.host", "127.0.0.1");
@@ -29,18 +29,17 @@ public final class AngelInventories extends JavaPlugin {
         saveConfig();
 
         // Pull data from db to memory
-        playerData = mysql.getPlayerInventories();
         staticInventories = mysql.getCustomInventories();
 
         // Register Commands
-        getCommand("ti").setExecutor(new CommandTI(playerData));
-        getCommand("recoverInventory").setExecutor(new CommandRecoverInventory(playerData));
+        getCommand("ti").setExecutor(new CommandTI(playerRoster));
+        getCommand("recoverInventory").setExecutor(new CommandRecoverInventory(playerRoster));
         getCommand("saveCustomInventory").setExecutor(new CommandSaveInventory(staticInventories));
         getCommand("equipCustomInventory").setExecutor(new CommandSetInventory(staticInventories));
         getCommand("removeCustomInventory").setExecutor((new CommandRemoveInventory(staticInventories)));
 
         // Listener hooks
-        getServer().getPluginManager().registerEvents(new SaveListener(this), this);
+        getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
 
         // Database
         mysql = new MySQL(this);

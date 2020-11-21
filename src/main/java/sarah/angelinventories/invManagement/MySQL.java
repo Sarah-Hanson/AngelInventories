@@ -1,10 +1,9 @@
 package sarah.angelinventories.invManagement;
 
-import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import sarah.angelinventories.AngelInventories;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +18,7 @@ public class MySQL extends Database {
     private final String username;
     private final String password;
     private final int port;
+    private boolean debugging;
 
     public MySQL(AngelInventories plugin) {
         super(plugin);
@@ -28,131 +28,6 @@ public class MySQL extends Database {
         username = plugin.getConfig().getString("mysql.username");
         password = plugin.getConfig().getString("mysql.password");
         port = plugin.getConfig().getInt("mysql.port");
-    }
-
-    @Override
-    public Connection getSQLConnection() {
-        try {
-            if (connection != null && !connection.isClosed()) {
-                return connection;
-            }
-            Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, username, password);
-            return connection;
-        } catch (SQLException ex) {
-            plugin.getLogger().log(Level.SEVERE, "MySQL Exception on initialize", ex);
-        } catch (ClassNotFoundException ex) {
-            plugin.getLogger().log(Level.SEVERE, "You need the MySQL JDBC library, good luck.", ex);
-        }
-        return null;
-    }
-
-    public HashMap<Player, PlayerData> getPlayerInventories() {
-
-        ResultSet rs = null;
-        PreparedStatement pst;
-        HashMap<Player, PlayerData> playerInventories = new HashMap<>();
-
-        try {
-            pst = connection.prepareStatement("SELECT * FROM player_inventories;");
-            rs = pst.executeQuery();
-            while (rs.next()) {
-                //Pull row
-                String uuid = rs.getString("player_uuid");
-                String invString = rs.getString("inventory_string");
-                Player player = Bukkit.getPlayer(UUID.fromString(uuid));
-
-                //See if that uuid is already in dataset, if so add it to their inventories, otherwise add a new player
-                if (playerInventories.containsKey(player)) {
-                    PlayerData data = playerInventories.get(player);
-                    data.inventories.add(InventorySerializer.fromBase64(invString));
-                } else {
-                    ArrayList<Inventory> inventory = new ArrayList<>();
-                    inventory.add(InventorySerializer.fromBase64(invString));
-                    assert player != null;
-                    playerInventories.put(player, new PlayerData(inventory, player));
-                }
-            }
-        } catch (Exception e) {
-            //TODO: Log Errors
-        } finally {
-            try {
-                connection.close();
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (Exception e) {
-                //TODO: Iunno what to do if closing fails
-            }
-
-        }
-        return playerInventories;
-    }
-
-    public HashMap<String, Inventory> getCustomInventories() {
-        ResultSet rs = null;
-        PreparedStatement ps;
-        HashMap<String, Inventory> invs = new HashMap<String, Inventory>() {
-            private static final long serialVersionUID = -7474154515428322552L;
-        };
-
-        try {
-            ps = connection.prepareStatement("SELECT * FROM static_inventories;");
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                String invName = rs.getString("inventory_name");
-                String invString = rs.getString("inventory_string");
-                invs.put(invName, InventorySerializer.fromBase64(invString));
-            }
-        } catch (Exception e) {
-            //TODO: Log Errors
-        } finally {
-            try {
-                connection.close();
-                if (rs != null) {
-                    rs.close();
-                }
-            } catch (SQLException ex) {
-                plugin.getLogger().log(Level.SEVERE, "Failed to get custom inventories.");
-            }
-
-        }
-        return invs;
-    }
-
-    public void setPlayerInventories(HashMap<Player, PlayerData> players) {
-        players.forEach((player, data) -> {
-            String player_uuid = player.getUniqueId().toString();
-            for (Inventory inv : data.inventories) {
-                int inventory_num = data.inventories.indexOf(inv);
-                try {
-                    String query = "REPLACE into player_inventories (player_uuid, inventory_num, inventory_string) values(?, ?, ?)";
-                    PreparedStatement preparedStmt = connection.prepareStatement(query);
-                    preparedStmt.setString(1, player_uuid);
-                    preparedStmt.setInt(2, inventory_num);
-                    preparedStmt.setString(3, InventorySerializer.toBase64(inv));
-                    preparedStmt.execute();
-                } catch (SQLException ex) {
-                    plugin.getLogger().log(Level.SEVERE, "Failed to set player inventories.");
-                }
-            }
-        });
-
-    }
-
-    public void setCustomInventories(HashMap<String, Inventory> invs) {
-        invs.forEach((invName, inv) -> {
-            String query = "REPLACE into player_inventories (inv_name, inventory_string) values(?, ?)";
-            try {
-                PreparedStatement preparedStmt = connection.prepareStatement(query);
-                preparedStmt.setString(1, invName);
-                preparedStmt.setString(2, InventorySerializer.toBase64(inv));
-                preparedStmt.execute();
-            } catch (SQLException ex) {
-                plugin.getLogger().log(Level.SEVERE, "Failed to set custom inventories.");
-            }
-        });
-
     }
 
     public void load() {
@@ -214,5 +89,77 @@ public class MySQL extends Database {
             plugin.getLogger().log(Level.SEVERE, "MySQL tables failed to create, check MySQL.java 175-202", e);
         }
         initialize();
+    }
+
+    @Override
+    public Connection getSQLConnection() {
+        try {
+            if (connection != null && !connection.isClosed()) {
+                return connection;
+            }
+            Class.forName("com.mysql.jdbc.Driver");
+            connection = DriverManager.getConnection("jdbc:mysql://" + host + ":" + port + "/" + database, username, password);
+            return connection;
+        } catch (SQLException ex) {
+            plugin.getLogger().log(Level.SEVERE, "MySQL Exception on initialize", ex);
+        } catch (ClassNotFoundException ex) {
+            plugin.getLogger().log(Level.SEVERE, "You need the MySQL JDBC library, good luck.", ex);
+        }
+        return null;
+    }
+
+    public HashMap<String, Inventory> getCustomInventories() {
+        ResultSet rs = null;
+        PreparedStatement ps;
+        HashMap<String, Inventory> invs = new HashMap<String, Inventory>() {
+            private static final long serialVersionUID = -7474154515428322552L;
+        };
+
+        try {
+            ps = connection.prepareStatement("SELECT * FROM static_inventories;");
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                String invName = rs.getString("inventory_name");
+                String invString = rs.getString("inventory_string");
+                invs.put(invName, InventorySerializer.fromBase64(invString));
+            }
+        } catch (Exception e) {
+            //TODO: Log Errors
+        } finally {
+            try {
+                connection.close();
+                if (rs != null) {
+                    rs.close();
+                }
+            } catch (SQLException ex) {
+                plugin.getLogger().log(Level.SEVERE, "Failed to get custom inventories.");
+            }
+
+        }
+        return invs;
+    }
+
+    public PlayerData getPlayerData(UUID uuid) throws SQLException, IOException {
+        Connection connection = getSQLConnection();
+        CallableStatement cs = connection.prepareCall("{call fn_load_player (?, ?)}");
+        cs.setString("uuid", uuid.toString());
+        ResultSet rs = cs.executeQuery();
+        ArrayList<Inventory> inventories = new ArrayList<>();
+        Integer currentPlayerInvIndex;
+        String currentCustomInvName;
+        while (rs.next()) {
+            if (currentCustomInvName.isEmpty()) {
+                currentCustomInvName = rs.getString("current_custom_inv");
+            }
+            if (currentPlayerInvIndex == null) {
+                currentPlayerInvIndex = rs.getInt("current_player_inv");
+            }
+            inventories.add(InventorySerializer.fromBase64(rs.getString("inventory")));
+        }
+
+        PlayerData playerData = new PlayerData(plugin, uuid, inventories, currentPlayerInvIndex, currentCustomInvName)
+    }
+
+    public void setInventory(String name, Inventory inventory) {
     }
 }

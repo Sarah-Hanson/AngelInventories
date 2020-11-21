@@ -4,16 +4,20 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.Inventory;
+import sarah.angelinventories.AngelInventories;
 import sarah.angelinventories.invManagement.PlayerData;
 
-import java.util.ArrayList;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.UUID;
 
 public class CommandTI implements CommandExecutor {
-    HashMap<Player, PlayerData> playerData;
+    HashMap<UUID, PlayerData> playerData;
+    AngelInventories plugin;
 
-    public CommandTI(HashMap<Player, PlayerData> playerData) {
+    public CommandTI(AngelInventories plugin, HashMap<UUID, PlayerData> playerData) {
+        this.plugin = plugin;
         this.playerData = playerData;
     }
 
@@ -21,23 +25,28 @@ public class CommandTI implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (sender instanceof Player) {
             Player player = (Player) sender;
-            PlayerData senderData;
+            UUID uuid = player.getUniqueId();
+            PlayerData playerData;
 
-            if (playerData.containsKey(player)) {
-                senderData = playerData.get(player);
+            if (this.playerData.containsKey(uuid)) {
+                playerData = this.playerData.get(uuid);
             } else {
-                ArrayList<Inventory> inv = new ArrayList<>();
-                inv.add(player.getInventory());
-
-                senderData = new PlayerData(inv, player);
-
-                playerData.put(player, senderData);
+                try {
+                    playerData = new PlayerData(plugin, uuid);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return false;
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                    return false;
+                }
             }
-            if (senderData != null) {
+            if (playerData != null) {
                 // Just /TI command
                 if (args.length == 0) {
-                    senderData.ToggleInv();
-                    sender.sendMessage("Inventory set to: " + (senderData.currentPlayerInvIndex + 1));
+                    //tODO: Handle unchanged index
+                    playerData.ToggleInv();
+                    sender.sendMessage("Inventory set to: " + (playerData.currentPlayerInvIndex + 1));
                     return true;
                 } else if (args.length == 1) {
                     int invNum;
@@ -47,7 +56,7 @@ public class CommandTI implements CommandExecutor {
                         sender.sendMessage("Argument must be an inventory index.");
                         return false;
                     }
-                    senderData.SetInv(invNum);
+                    playerData.SetInv(invNum);
                     sender.sendMessage("Inventory set to: " + (invNum + 1));
                     return true;
                 }
