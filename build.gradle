@@ -8,7 +8,7 @@ plugins {
 
 apply plugin: 'java'
 
-group = 'sarah'
+group = 'com.vergilprime'
 version = '1.0 beta'
 jar.archiveFileName = 'AngelInventories.jar'
 
@@ -43,30 +43,21 @@ tasks.withType(JavaCompile) {
 }
 
 spigot {
-    authors = ["Sarah Hanson", "VergilPrime"]
+    authors = ["VergilPrime"]
     apiVersion = "1.16"
     website = "Angels-Reach.com"
     name = project.description
-    description = "Toggle through inventories or replace player inventories with preset inventories via command."
+    description = "Expand players' Ender Chests and allow instant access via /chest."
     commands {
         Chest {
             description = "Access your Ender Chest anywhere."
-            permission = "AngelEnderChest.ChestCommand"
+            permission = "AngelInventories.ChestCommand"
             permissionMessage = "You must vote to gain access to your Ender Chest anywhere."
             usage = "/chest"
         }
     }
     permissions {
-        "AngelInventories.SaveCustom" {
-            description = "Open your Ender Chest anywhere."
-        }
-        "AngelInventories.GetCustom" {
-            description = "Open your Ender Chest anywhere."
-        }
-        "AngelInventories.SetOthersCustom" {
-            description = "Open your Ender Chest anywhere."
-        }
-        "AngelInventories.Inventories.2" {
+        "AngelInventories.ChestCommand" {
             description = "Open your Ender Chest anywhere."
         }
     }
